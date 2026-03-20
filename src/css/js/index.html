@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treino Quiz RPG</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>Treino Quiz RPG</h1>
+  </header>
+
+  <div id="barras">
+    <div class="barra"><span>Energia</span><div class="barra-externa"><div id="energia-barra" class="barra-interna"></div></div></div>
+    <div class="barra"><span>Adrenalina</span><div class="barra-externa"><div id="adrenalina-barra" class="barra-interna"></div></div></div>
+    <div class="barra"><span>Nível</span><div class="barra-externa"><div id="nivel-barra" class="barra-interna nivel"></div></div></div>
+    <div class="barra"><span>Moedas</span><div class="barra-externa"><div id="moedas-barra" class="barra-interna moedas"></div></div></div>
+  </div>
+
+  <nav>
+    <button onclick="irPara('jogar')">Jogar</button>
+    <button onclick="irPara('treino')">Treinar</button>
+    <button onclick="irPara('quiz')">Quiz</button>
+    <button onclick="irPara('loja')">Loja</button>
+  </nav>
+
+  <main id="tela">
+    <div id="nome-inicial">
+      <p>Digite seu nome:</p>
+      <input type="text" id="input-nome" placeholder="Seu nome">
+      <button onclick="iniciarJogo()">Iniciar</button>
+    </div>
+  </main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
