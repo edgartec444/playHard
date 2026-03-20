@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Vida Gamer VIP</title>
+<style>
+body {
+    background:#0a0a0a;
+    font-family:Arial, sans-serif;
+    color:gold;
+    text-align:center;
+    margin:0;
+    padding:0;
+}
+h1,h2,h3 {text-shadow:0 0 5px gold;}
+.box {
+    background:#111;
+    border:2px solid gold;
+    border-radius:12px;
+    padding:15px;
+    margin:15px auto;
+    width:360px;
+    box-shadow:0 0 15px rgba(255,215,0,0.3);
+    transition: transform 0.3s;
+}
+.box:hover {transform:scale(1.03);}
+button {
+    background:black;
+    color:gold;
+    border:1px solid gold;
+    padding:10px;
+    margin:5px;
+    cursor:pointer;
+    border-radius:8px;
+    transition:0.3s;
+}
+button:hover {background:gold;color:black;}
+#barra {height:20px;background:gold;width:0%;border-radius:10px;transition:0.5s;}
+.cartao.evento {
+    display:flex;flex-direction:column;align-items:center;
+    background:#111;border:2px solid gold;border-radius:12px;
+    padding:15px;margin:15px auto;width:360px;
+    box-shadow:0 0 15px rgba(255,215,0,0.3);
+    animation:fadeIn 1s ease;
+}
+.cartao.evento img {
+    width:120px;border-radius:50%;margin-bottom:10px;border:2px solid gold;
+}
+.cartao.evento p {color:gold;text-align:center;font-size:14px;text-shadow:0 0 5px gold;}
+@keyframes fadeIn {from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+</style>
+</head>
+<body>
+
+<h1>🔥 Vida Gamer VIP</h1>
+
+<div class="box" id="inicio">
+    <input id="nome" placeholder="Seu nome">
+    <button onclick="iniciar()">Começar</button>
+</div>
+
+<div id="jogo" style="display:none;">
+
+    <div class="box" id="status"></div>
+
+    <div class="box">
+        <h3>📅 Agenda / Check-in</h3>
+        <button onclick="checkin()">✔ Treinei Hoje</button>
+        <p id="streak"></p>
+    </div>
+
+    <div class="box" id="menu"></div>
+
+    <div class="box">
+        <p id="msg"></p>
+        <div style="background:#222;">
+            <div id="barra"></div>
+        </div>
+        <button onclick="acao()">Ação</button>
+    </div>
+
+</div>
+
+<script>
+// -------------------- JOGADOR --------------------
+let jogador, esporteAtual=null, progresso=0;
+
+// -------------------- ESPORTES --------------------
+let esportes=[
+    {nome:"Corrida", dificuldade:40, atributo:"resistencia"},
+    {nome:"Futebol", dificuldade:60, atributo:"tecnica"},
+    {nome:"Boxe", dificuldade:80, atributo:"forca"}
+];
+
+// -------------------- QUIZ --------------------
+let perguntas=[
+    {p:"Jogadores no futebol?", r:"11"},
+    {p:"Round boxe (segundos)?", r:"180"},
+    {p:"Piscina olímpica (m)?", r:"50"}
+];
+
+// -------------------- ATLETAS --------------------
+const atletas = [
+    {nome:"Michael Jordan", foto:"https://upload.wikimedia.org/wikipedia/commons/3/3e/Michael_Jordan_in_2014.jpg", frase:"Sempre avance, mesmo que seja um passo de cada vez!"},
+    {nome:"LeBron James", foto:"https://upload.wikimedia.org/wikipedia/commons/2/24/LeBron_James_Lakers.jpg", frase:"Não pare até se orgulhar do que conquistou."},
+    {nome:"Serena Williams", foto:"https://upload.wikimedia.org/wikipedia/commons/9/97/Serena_Williams_2013.jpg", frase:"Acredite em você e vá além dos seus limites!"},
+    {nome:"Cristiano Ronaldo", foto:"https://upload.wikimedia.org/wikipedia/commons/3/36/Cristiano_Ronaldo_2018_smile.jpg", frase:"Trabalho duro supera talento quando o talento não trabalha duro!"},
+    {nome:"Lionel Messi", foto:"https://upload.wikimedia.org/wikipedia/commons/d/d2/Messi_celebrando_sorriso.jpg", frase:"Nunca desista dos seus sonhos, mesmo quando tudo parecer difícil."},
+    {nome:"Marta", foto:"https://upload.wikimedia.org/wikipedia/commons/6/6f/Marta_sorrindo_2017.jpg", frase:"Acredite em você e inspire os outros com seu talento."},
+    {nome:"Neymar Jr", foto:"https://upload.wikimedia.org/wikipedia/commons/f/f7/Neymar_2018_sorriso.jpg", frase:"Divirta-se enquanto corre atrás dos seus sonhos!"}
+];
+
+// -------------------- MISSÕES --------------------
+let missoes=[];
+function gerarMissoes(){
+    missoes=[
+        { nome:"Completar um esporte", tipo:"esporte", feita:false },
+        { nome:"Acertar um quiz", tipo:"quiz", feita:false },
+        { nome:"Fazer check-in", tipo:"checkin", feita:false }
+    ];
+}
+function mostrarMissoes(){
+    let html="<h3>🎯 Missões do Dia</h3>";
+    missoes.forEach(m=>{html += `${m.feita ? "✔" : "❌"} ${m.nome}<br>`;});
+    document.getElementById("menu").innerHTML=html;
+}
+function verificarMissao(tipo){
+    missoes.forEach(m=>{
+        if(m.tipo===tipo && !m.feita){
+            m.feita=true;
+            jogador.energia+=15;
+            msg("🎉 Missão concluída: "+m.nome);
+            eventoAtleta();
+        }
+    });
+    verificarTodas();
+}
+function verificarTodas(){
+    let completas = missoes.every(m=>m.feita);
+    if(completas){
+        jogador.energia+=50;
+        jogador.forca++;
+        jogador.tecnica++;
+        jogador.resistencia++;
+        msg("🔥 TODAS MISSÕES COMPLETAS! BÔNUS LIBERADO!");
+    }
+}
+
+// -------------------- INICIO --------------------
+function iniciar(){
+    let nome=document.getElementById("nome").value;
+    jogador={
+        nome,
+        energia:100,
+        forca:1,
+        tecnica:1,
+        resistencia:1,
+        foco:1,
+        streak:0,
+        ultimoDia:null
+    };
+    document.getElementById("inicio").style.display="none";
+    document.getElementById("jogo").style.display="block";
+    gerarMissoes();
+    atualizar();
+    mostrarMissoes();
+}
+
+// -------------------- STATUS --------------------
+function atualizar(){
+    document.getElementById("status").innerHTML=`
+    <strong>${jogador.nome}</strong><br>
+    Energia: ${jogador.energia}<br>
+    🔥 Streak: ${jogador.streak}<br>
+    Força:${jogador.forca} Técnica:${jogador.tecnica}<br>
+    Resistência:${jogador.resistencia} Foco:${jogador.foco}`;
+    document.getElementById("streak").innerText="Sequência: "+jogador.streak;
+}
+
+// -------------------- CHECK-IN --------------------
+function checkin(){
+    let hoje=new Date().toDateString();
+    if(jogador.ultimoDia===hoje){msg("Você já treinou hoje!"); return;}
+    if(jogador.ultimoDia===new Date(Date.now()-86400000).toDateString()){jogador.streak++;}
+    else{jogador.streak=1;}
+    jogador.ultimoDia=hoje;
+    jogador.energia+=20;
+    jogador.foco++;
+    msg("🔥 Check-in feito! Streak +1");
+    verificarMissao("checkin");
+    atualizar();
+}
+
+// -------------------- MENU ESPORTES --------------------
+function menu(){
+    let m=document.getElementById("menu"); m.innerHTML="";
+    esportes.forEach((e,i)=>{
+        let b=document.createElement("button");
+        b.innerText=e.nome;
+        b.onclick=()=>iniciarEsporte(i);
+        m.appendChild(b);
+    });
+}
+
+// -------------------- ESPORTE --------------------
+function iniciarEsporte(i){
+    esporteAtual=esportes[i];
+    progresso=0;
+    let q=perguntas[Math.floor(Math.random()*perguntas.length)];
+    let resp=prompt(q.p);
+    if(resp!=q.r){jogador.energia-=10; msg("Errou! -energia");}
+    else{jogador.foco++; msg("Acertou! +foco");}
+    verificarMissao("quiz");
+    atualizar();
+}
+
+// -------------------- AÇÃO --------------------
+function acao(){
+    if(!esporteAtual) return;
+    let base=jogador[esporteAtual.atributo]*20;
+    let sorte=Math.random()*40;
+    let total=base+sorte;
+    if(jogador.energia<30) total-=20;
+    if(total>esporteAtual.dificuldade){progresso++; msg("Progresso: "+progresso);}
+    else{msg("Falhou!"); jogador.energia-=10;}
+    jogador.energia-=5;
+    barra();
+    if(progresso>=3){
+        msg("🏆 Vitória!");
+        jogador.forca++;
+        jogador.tecnica++;
+        jogador.resistencia++;
+        verificarMissao("esporte");
+        esporteAtual=null;
+    }
+    atualizar();
+}
+
+// -------------------- BARRA PROGRESSO --------------------
+function barra(){
+    let p=(progresso/3)*100;
+    document.getElementById("barra").style.width=p+"%";
+}
+
+// -------------------- MENSAGEM --------------------
+function msg(t){document.getElementById("msg").innerText=t;}
+
+// -------------------- EVENTO ATLETA --------------------
+function eventoAtleta(){
+    const escolhido = atletas[Math.floor(Math.random()*atletas.length)];
+    const div=document.createElement("div");
+    div.className="cartao vip evento";
+    div.innerHTML=`<img src="${escolhido.foto}" class="atleta"><p class="mensagem">"${escolhido.frase}" — ${escolhido.nome}</p>`;
+    document.body.appendChild(div);
+    div.onclick=()=>div.remove();
+}
+</script>
+</body>
+</html>
